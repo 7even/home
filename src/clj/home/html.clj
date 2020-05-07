@@ -7,5 +7,5 @@
     [:meta {:charset "utf-8"}]
     [:title "Home dashboard"]]
    [:body
-    [:div#root
-     [:h1 "Hello"]]]))
+    [:div#root]
+    [:script {:src "/js/main.js"}]]))
