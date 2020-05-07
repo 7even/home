@@ -2,11 +2,13 @@
   (:require [aleph.http :as http]
             [aleph.netty :refer [wait-for-close]]
             [compojure.core :refer [GET routes]]
-            [ring.util.response :refer [response]]))
+            [home.html :as html]
+            [ring.util.response :refer [content-type response]]))
 
 (def app-routes
   (routes
-   (GET "/" [] (response "Welcome home!"))))
+   (GET "/" [] (-> (response html/page)
+                   (content-type "text/html")))))
 
 (defn start [{:keys [port join?]}]
   (let [server (http/start-server app-routes

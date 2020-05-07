@@ -1,6 +1,7 @@
 {:deps {aero {:mvn/version "1.1.6"}
         aleph {:mvn/version "0.4.7-alpha5"}
         compojure {:mvn/version "1.6.1"}
+        hiccup {:mvn/version "1.0.5"}
         integrant {:mvn/version "0.8.0"}
         integrant/repl {:mvn/version "0.3.1"}}
  :paths ["src/clj" "resources"]
