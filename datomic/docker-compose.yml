@@ -1,0 +1,20 @@
+version: '3.5'
+
+services:
+  transactor:
+    container_name: home-datomic
+    image: akiel/datomic-free
+    ports:
+      - 4334-4336:4334-4336
+    environment:
+      - ADMIN_PASSWORD=admin
+      - DATOMIC_PASSWORD=datomic
+    volumes:
+      - ./data:/data
+      - ./log:/log
+    networks:
+      - home-datomic
+
+networks:
+  home-datomic:
+    name: home-datomic

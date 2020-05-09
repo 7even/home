@@ -1,6 +1,7 @@
 (ns home.core
   (:require [aero.core :as aero]
             [clojure.java.io :refer [resource]]
+            [home.db :as db]
             [home.http :as http]
             [integrant.core :as ig]))
 
@@ -17,6 +18,10 @@
    (-> "config.edn"
        resource
        (aero/read-config {:profile profile}))))
+
+(defmethod ig/init-key :datomic/client [_ {:keys [uri]}]
+  (println ";; Starting Datomic client")
+  (db/setup-db uri))
 
 (defmethod ig/init-key :http/handler [_ config]
   (println ";; Starting HTTP handler")

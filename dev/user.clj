@@ -7,4 +7,10 @@
 (defn system []
   integrant.repl.state/system)
 
+(defn db-conn []
+  (:datomic/client (system)))
+
+(defn db []
+  (datomic.api/db (db-conn)))
+
 (def reset integrant.repl/reset)
