@@ -1,0 +1,63 @@
+<rss version="2.0">
+  <channel>
+    <title>"Ведомости". Ежедневная деловая газета</title>
+    <link>https://www.vedomosti.ru</link>
+    <description>"Ведомости". Новости, 09.05.2020</description>
+    <image>
+      <url>https://cdn.vdmsti.ru/assets/rss_logo.gif</url>
+      <title>"Ведомости". Ежедневная деловая газета</title>
+      <link>https://www.vedomosti.ru</link>
+    </image>
+    <item>
+      <title>
+        В Сеуле экстренно закрыли все бары и клубы из-за новой вспышки коронавируса
+      </title>
+      <link>
+        https://www.vedomosti.ru/society/news/2020/05/09/829907-v-seule-ekstrenno-zakrili-vse-bari-i-klubi
+      </link>
+      <guid>
+        https://www.vedomosti.ru/society/news/2020/05/09/829907-v-seule-ekstrenno-zakrili-vse-bari-i-klubi
+      </guid>
+      <pdalink>
+        https://www.vedomosti.ru/society/news/2020/05/09/829907-v-seule-ekstrenno-zakrili-vse-bari-i-klubi
+      </pdalink>
+      <author/>
+      <category>Общество</category>
+      <pubDate>Sat, 09 May 2020 16:31:06 +0300</pubDate>
+    </item>
+    <item>
+      <title>
+        «Альпийская Ибица» была одним из центров распространения коронавируса
+      </title>
+      <link>
+        https://www.vedomosti.ru/society/news/2020/05/09/829905-alpiiskaya-ibitsa-bila-odnim-iz-tsentrov-koronavirusa
+      </link>
+      <guid>
+        https://www.vedomosti.ru/society/news/2020/05/09/829905-alpiiskaya-ibitsa-bila-odnim-iz-tsentrov-koronavirusa
+      </guid>
+      <pdalink>
+        https://www.vedomosti.ru/society/news/2020/05/09/829905-alpiiskaya-ibitsa-bila-odnim-iz-tsentrov-koronavirusa
+      </pdalink>
+      <author/>
+      <category>Общество</category>
+      <pubDate>Sat, 09 May 2020 16:15:33 +0300</pubDate>
+    </item>
+    <item>
+      <title>
+        Мэрия Москвы разделит с бизнесом расходы на тестирование сотрудников на COVID-19
+      </title>
+      <link>
+        https://www.vedomosti.ru/business/articles/2020/05/09/829897-meriya-moskvi-razdelit-biznesom
+      </link>
+      <guid>
+        https://www.vedomosti.ru/business/articles/2020/05/09/829897-meriya-moskvi-razdelit-biznesom
+      </guid>
+      <category>Политика</category>
+      <enclosure url="https://cdn.vdmsti.ru/image/2020/3m/l54nu/normal-reg.jpg" type="image/jpeg"/>
+      <description>
+        Согласно указу мэра Москвы Сергея Собянина, с 12 мая работодатели, в том числе и индивидуальные предприниматели, должны обеспечить регулярное выборочное тестирование не менее 10% сотрудников на коронавирус. С 1 июня 2020 г. такие тесты должны делаться в течение каждых 15 календарных дней. Кроме того, власти обязывают работодателей обеспечить забор крови у работников для выявления иммунитета к COVID-19. Это касается предприятий, которые продолжают работать.
+      </description>
+      <pubDate>Sat, 09 May 2020 10:02:56 +0300</pubDate>
+    </item>
+  </channel>
+</rss>
