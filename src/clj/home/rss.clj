@@ -1,7 +1,10 @@
 (ns home.rss
-  (:require [home.rss.parser :refer [xml->news]]))
+  (:require [home.db.rss :as db.rss]
+            [home.rss.parser :refer [xml->news]]))
 
-(defn get-news [rss-url]
-  (-> rss-url
-      slurp
-      xml->news))
+(defn get-news [db]
+  (->> (db.rss/list-rss db)
+       (mapv (fn [rss]
+               (-> rss
+                   (dissoc :rss/url)
+                   (assoc :rss/news (-> rss :rss/url slurp xml->news)))))))

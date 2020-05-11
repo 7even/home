@@ -37,7 +37,7 @@
                               (get-in [:attrs :url]))
                :description (tag-content :description content)
                :published-at (parse-date (tag-content :pubDate content))}))
-       (map (fn [attrs]
-              (->> attrs
-                   (remove (comp nil? val))
-                   (into {}))))))
+       (mapv (fn [attrs]
+               (->> attrs
+                    (remove (comp nil? val))
+                    (into {}))))))

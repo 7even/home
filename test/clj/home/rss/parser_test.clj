@@ -4,7 +4,7 @@
             [home.rss.parser :refer [xml->news]]))
 
 (deftest xml->news-test
-  (let [xml (-> "rss.xml" resource slurp)
+  (let [xml (-> "files/vedomosti.xml" resource slurp)
         news (xml->news xml)]
     (is (= [{:title "В Сеуле экстренно закрыли все бары и клубы из-за новой вспышки коронавируса"
              :link "https://www.vedomosti.ru/society/news/2020/05/09/829907-v-seule-ekstrenno-zakrili-vse-bari-i-klubi"
