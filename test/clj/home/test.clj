@@ -21,3 +21,15 @@
   (tests)
   (d/delete-database (:uri db-config))
   (reset! db-conn nil))
+
+(defn create-rss-feeds []
+  (let [ved-id (d/squuid)
+        med-id (d/squuid)]
+    (d/transact @db-conn
+                [{:rss/id ved-id
+                  :rss/name "Vedomosti"
+                  :rss/url "https://www.vedomosti.ru/rss/news"}
+                 {:rss/id med-id
+                  :rss/name "Meduza"
+                  :rss/url "https://meduza.io/rss/news"}])
+    [ved-id med-id]))
