@@ -3,4 +3,5 @@
                                  :default #env DATOMIC_URI}}
  :http/handler {:port #long #or [#env HTTP_PORT
                                  8888]
-                :join? false}}
+                :join? false
+                :db-conn #ig/ref :datomic/client}}

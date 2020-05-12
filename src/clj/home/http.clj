@@ -3,36 +3,30 @@
             [aleph.netty :refer [wait-for-close]]
             [compojure.core :refer [GET routes]]
             [home.html :as html]
+            [home.websocket :as ws]
             [manifold.deferred :as d]
-            [manifold.stream :as s]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.util.response :refer [content-type response]]))
 
-(defn- send-to-ws [s payload]
-  (s/put! s (pr-str payload)))
+(defn ws-handler [config]
+  (fn [req]
+    (d/let-flow [ws-conn (http/websocket-connection req)
+                 ws-config (assoc config :ws-conn ws-conn)]
+      (ws/handle-connection ws-config)
+      nil)))
 
-(defn ws-handler [req]
-  (d/let-flow [conn (http/websocket-connection req)]
-    (send-to-ws conn {:message "Hello!"})
-    (s/consume (fn [payload]
-                 (let [client-message (read-string payload)]
-                   (send-to-ws conn {:you/sent client-message})))
-               conn)
-    nil))
-
-(def app-routes
+(defn app-routes [config]
   (routes
-   (GET "/ws" [] ws-handler)
+   (GET "/ws" [] (ws-handler config))
    (GET "/*" [] (-> (response html/page)
                     (content-type "text/html")))))
 
-(def app
-  (-> app-routes
+(defn app [config]
+  (-> (app-routes config)
       (wrap-resource "public")))
 
-(defn start [{:keys [port join?]}]
-  (let [server (http/start-server app
-                                  {:port port})]
+(defn start [{:keys [port join?] :as config}]
+  (let [server (http/start-server (app config) {:port port})]
     (when join?
       (wait-for-close server))
     server))
