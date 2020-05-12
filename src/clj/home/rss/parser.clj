@@ -32,7 +32,7 @@
        (filter #(= (:tag %) :item))
        (map (fn [{:keys [content]}]
               {:title (tag-content :title content)
-               :link (tag-content :link content)
+               :url (tag-content :link content)
                :image-url (-> (find-tag :enclosure content)
                               (get-in [:attrs :url]))
                :description (tag-content :description content)
