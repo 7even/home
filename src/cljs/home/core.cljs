@@ -1,14 +1,13 @@
 (ns home.core
   (:require [reagent.dom :as rd]
-            [re-frame.core :as rf]))
-
-(defn hello []
-  [:h1 "Hello from re-frame"])
+            [re-frame.core :as rf]
+            [home.events :as events]
+            [home.views :as views]))
 
 (defn render []
-  (rd/render [hello]
+  (rd/render [views/interface]
              (js/document.getElementById "root")))
 
 (defn init []
-  (println "Hello!")
+  (rf/dispatch-sync [::events/initialize])
   (render))

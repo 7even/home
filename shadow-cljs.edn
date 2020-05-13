@@ -1,6 +1,7 @@
 {:source-paths ["src/cljs"]
  :dependencies [[re-frame "0.12.0"]
-                [cider/cider-nrepl "0.21.0"]]
+                [cider/cider-nrepl "0.21.0"]
+                [nilenso/wscljs "0.2.0"]]
  :builds {:main {:target :browser
                  :output-dir "resources/public/js"
                  :modules {:main {:init-fn home.core/init}}

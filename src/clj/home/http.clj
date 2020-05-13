@@ -17,7 +17,7 @@
 
 (defn app-routes [config]
   (routes
-   (GET "/ws" [] (ws-handler config))
+   (GET "/api/ws" [] (ws-handler config))
    (GET "/*" [] (-> (response html/page)
                     (content-type "text/html")))))
 
