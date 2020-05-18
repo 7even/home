@@ -8,6 +8,10 @@
   (rd/render [views/interface]
              (js/document.getElementById "root")))
 
+(defn reload []
+  (rf/clear-subscription-cache!)
+  (render))
+
 (defn init []
   (rf/dispatch-sync [::events/initialize])
   (render))
