@@ -5,7 +5,7 @@
             [home.subs :as subs]))
 
 (defn- format-date [date]
-  (let [formatter (f/formatter "HH:mm dd MMM yyyy")]
+  (let [formatter (f/formatter "HH:mm")]
     (f/unparse formatter (t/to-default-time-zone date))))
 
 (defn card [{:keys [title url image-url description published-at source]}]
