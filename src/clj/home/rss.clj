@@ -5,6 +5,6 @@
 (defn get-news [db]
   (->> (db.rss/list-rss db)
        (mapv (fn [rss]
-               (-> rss
-                   (dissoc :rss/url)
-                   (assoc :rss/news (-> rss :rss/url slurp xml->news)))))))
+               (assoc rss
+                      :rss/news
+                      (-> rss :rss/url slurp xml->news))))))

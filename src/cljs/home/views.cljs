@@ -3,6 +3,7 @@
             [cljs-time.core :as t]
             [cljs-time.format :as f]
             [reagent-modals.modals :as modals]
+            [home.events :as events]
             [home.subs :as subs]))
 
 (defn- format-date [date]
@@ -10,11 +11,34 @@
     (f/unparse formatter (t/to-default-time-zone date))))
 
 (defn rss-manager []
-  [:div.modal-header
-   [:h5.modal-title "RSS feeds"]
-   [:button.close {:type "button"
-                   :data-dismiss "modal"}
-    [:span "×"]]])
+  [:div
+   [:div.modal-header
+    [:h5.modal-title "RSS feeds"]
+    [:button.close {:type "button"
+                    :data-dismiss "modal"}
+     [:span "×"]]]
+   [:div.modal-body.pb-0
+    [:form
+     (for [[id {:rss/keys [name url]}] @(rf/subscribe [::subs/rss-feeds])]
+       ^{:key id}
+       [:div.form-row.form-group
+        [:div.col-4
+         [:input.form-control {:type "text"
+                               :value name
+                               :on-change #(rf/dispatch [::events/change-rss-name
+                                                         id
+                                                         (-> % .-target .-value)])}]]
+        [:div.col-8
+         [:input.form-control {:type "text"
+                               :value url
+                               :on-change #(rf/dispatch [::events/change-rss-url
+                                                         id
+                                                         (-> % .-target .-value)])}]]])]]
+   [:div.modal-footer
+    [:button.btn.btn-primary
+     {:on-click #(do (println "Saving...")
+                     (modals/close-modal!))}
+     "Save"]]])
 
 (defn news-item [{:keys [title url image-url description published-at source]}]
   [:li.list-group-item
@@ -32,7 +56,10 @@
      [:ul.list-group.list-group-flush
       [:li.list-group-item
        [:button.btn.btn-primary
-        {:on-click #(modals/modal! [rss-manager])}
+        {:on-click (fn []
+                     (rf/dispatch-sync [::events/begin-editing-rss])
+                     (modals/modal! [rss-manager]
+                                    {:hidden #(rf/dispatch [::events/stop-editing-rss])}))}
         "Manage RSS feeds"]]
       (for [item @(rf/subscribe [::subs/rss-items])]
         ^{:key (:url item)} [news-item item])]]]])
