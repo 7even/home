@@ -1,19 +1,12 @@
 (ns home.rss-test
-  (:require [clojure.java.io :refer [resource]]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [home.rss :as rss]
             [home.test :refer :all]))
 
 (use-fixtures :each with-db)
 
 (deftest get-news-test
-  (let [ved-url (-> "files/vedomosti.xml"
-                    resource
-                    str)
-        med-url (-> "files/meduza.xml"
-                    resource
-                    str)
-        [ved-id med-id] (create-rss-feeds ved-url med-url)
+  (let [[ved-id med-id] (create-rss-feeds)
         news (rss/get-news (db))]
     (is (= 2 (count news)))
     (let [[vedomosti meduza] news]

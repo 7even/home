@@ -1,5 +1,6 @@
 (ns home.test
-  (:require [datomic.api :as d]
+  (:require [clojure.java.io :refer [resource]]
+            [datomic.api :as d]
             [home.core :as core]
             [integrant.core :as ig]
             [manifold.stream :as s]))
@@ -41,8 +42,14 @@
   (reset! ws-conn nil))
 
 (defn create-rss-feeds
-  ([] (create-rss-feeds "https://www.vedomosti.ru/rss/news"
-                        "https://meduza.io/rss/news"))
+  ([]
+   (let [ved-url (-> "files/vedomosti.xml"
+                     resource
+                     str)
+         med-url (-> "files/meduza.xml"
+                     resource
+                     str)]
+     (create-rss-feeds ved-url med-url)))
   ([ved-url med-url]
    (let [ved-id (d/squuid)
          med-id (d/squuid)]
