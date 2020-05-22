@@ -8,3 +8,8 @@
        (map (fn [rss-id]
               (let [rss (d/entity db rss-id)]
                 (select-keys rss [:rss/id :rss/name :rss/url]))))))
+
+(defn get-rss [db id]
+  (d/pull db
+          [:rss/id :rss/name :rss/url]
+          [:rss/id id]))
