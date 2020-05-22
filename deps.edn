@@ -6,6 +6,7 @@
         integrant {:mvn/version "0.8.0"}
         integrant/repl {:mvn/version "0.3.1"}
         io.rkn/conformity {:mvn/version "0.5.4"}
+        org.clojure/core.async {:mvn/version "1.2.603"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}}
  :paths ["src/clj" "resources"]
  :aliases {:dev {:extra-paths ["dev" "test/clj"]}

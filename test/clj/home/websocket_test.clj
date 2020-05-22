@@ -7,9 +7,10 @@
 
 (defn- ws-config []
   {:ws-conn @ws-conn
-   :db-conn @db-conn})
+   :db-conn @db-conn
+   :broadcaster {:bus @bus}})
 
-(use-fixtures :each with-db with-ws)
+(use-fixtures :each with-db with-broadcaster with-ws)
 
 (deftest handle-connection-test
   (create-rss-feeds)

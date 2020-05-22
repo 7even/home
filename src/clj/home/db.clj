@@ -10,6 +10,10 @@
     (conf/ensure-conforms conn norms [:home/schema])
     conn))
 
+(def get-queue d/tx-report-queue)
+
+(def remove-queue d/remove-tx-report-queue)
+
 (defn- get-ident [db id]
   (:db/ident (d/pull db [:db/ident] id)))
 

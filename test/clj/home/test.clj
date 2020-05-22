@@ -1,6 +1,7 @@
 (ns home.test
   (:require [clojure.java.io :refer [resource]]
             [datomic.api :as d]
+            [home.broadcaster :as broadcaster]
             [home.core :as core]
             [integrant.core :as ig]
             [manifold.stream :as s]))
@@ -23,6 +24,16 @@
   (tests)
   (d/delete-database (:uri db-config))
   (reset! db-conn nil))
+
+(def bus
+  (atom nil))
+
+(defn with-broadcaster [tests]
+  (let [{broadcaster-bus :bus
+         :as broadcaster} (broadcaster/start @db-conn)]
+    (reset! bus broadcaster-bus)
+    (tests)
+    (broadcaster/stop broadcaster)))
 
 (def ws-conn
   (atom nil))

@@ -1,7 +1,9 @@
 {:datomic/client {:uri #profile {:development "datomic:free://localhost:4334/home"
                                  :test "datomic:mem://home"
                                  :default #env DATOMIC_URI}}
+ :events/broadcaster {:db-conn #ig/ref :datomic/client}
  :http/handler {:port #long #or [#env HTTP_PORT
                                  8888]
                 :join? false
-                :db-conn #ig/ref :datomic/client}}
+                :db-conn #ig/ref :datomic/client
+                :broadcaster #ig/ref :events/broadcaster}}

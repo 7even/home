@@ -1,6 +1,7 @@
 (ns home.core
   (:require [aero.core :as aero]
             [clojure.java.io :refer [resource]]
+            [home.broadcaster :as broadcaster]
             [home.db :as db]
             [home.http :as http]
             [integrant.core :as ig]))
@@ -22,6 +23,14 @@
 (defmethod ig/init-key :datomic/client [_ {:keys [uri]}]
   (println ";; Starting Datomic client")
   (db/setup-db uri))
+
+(defmethod ig/init-key :events/broadcaster [_ {:keys [db-conn]}]
+  (println ";; Starting events broadcaster")
+  (broadcaster/start db-conn))
+
+(defmethod ig/halt-key! :events/broadcaster [_ broadcaster]
+  (println ";; Stopping events broadcaster")
+  (broadcaster/stop broadcaster))
 
 (defmethod ig/init-key :http/handler [_ config]
   (println ";; Starting HTTP handler")
