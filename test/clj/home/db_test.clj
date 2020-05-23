@@ -61,14 +61,14 @@
     (testing "with changes covering several entities"
       (let [len-eid 2
             len-id (d/squuid)
-            datoms (->> [[tx-eid      (d/entid (db) :db/txInstant)         now        tx-eid true]
-                         [ved-eid (d/entid (db) :rss/id)              ved-id tx-eid true]
-                         [ved-eid (d/entid (db) :rss/name)           "Vedomosti" tx-eid true]
-                         [ved-eid (d/entid (db) :rss/url) "https://vedomosti.ru" tx-eid true]
-                         [med-eid  (d/entid (db) :rss/url)         "https://meduza.ru" tx-eid true]
-                         [len-eid (d/entid (db) :rss/id)            len-id tx-eid false]
-                         [len-eid (d/entid (db) :rss/name)         "Lenta" tx-eid false]
-                         [len-eid (d/entid (db) :rss/url)    "https://lenta.ru" tx-eid false]]
+            datoms (->> [[tx-eid  (d/entid (db) :db/txInstant) now                    tx-eid true]
+                         [ved-eid (d/entid (db) :rss/id)       ved-id                 tx-eid true]
+                         [ved-eid (d/entid (db) :rss/name)     "Vedomosti"            tx-eid true]
+                         [ved-eid (d/entid (db) :rss/url)      "https://vedomosti.ru" tx-eid true]
+                         [med-eid (d/entid (db) :rss/url)      "https://meduza.ru"    tx-eid true]
+                         [len-eid (d/entid (db) :rss/id)       len-id                 tx-eid false]
+                         [len-eid (d/entid (db) :rss/name)     "Lenta"                tx-eid false]
+                         [len-eid (d/entid (db) :rss/url)      "https://lenta.ru"     tx-eid false]]
                         (map vec->datom))
             formatted-changes (db/format-changes {:db-after (db)
                                                   :tx-data datoms})]
