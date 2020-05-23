@@ -18,11 +18,10 @@
           first
           str/trim))
 
-(def date-format
-  (SimpleDateFormat. "E, dd MMM yyyy HH:mm:ss XX" java.util.Locale/US))
-
 (defn- parse-date [date-str]
-  (.parse date-format date-str))
+  (let [formatter (SimpleDateFormat. "E, dd MMM yyyy HH:mm:ss XX"
+                                     java.util.Locale/US)]
+    (.parse formatter date-str)))
 
 (defn xml->news [s]
   (->> (parse-str s)
