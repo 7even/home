@@ -35,10 +35,10 @@
                  :event/data (rss/serialize (db) med-id)}]
                formatted-changes))))
     (testing "with changes from a deleted entity"
-      (let [datoms (->> [[tx-eid     (d/entid (db) :db/txInstant) now                 tx-eid true]
-                         [med-eid (d/entid (db) :rss/id)          med-id              tx-eid false]
-                         [med-eid (d/entid (db) :rss/name)        "Meduza"            tx-eid false]
-                         [med-eid (d/entid (db) :rss/url)         "https://meduza.io" tx-eid false]]
+      (let [datoms (->> [[tx-eid  (d/entid (db) :db/txInstant) now                 tx-eid true]
+                         [med-eid (d/entid (db) :rss/id)       med-id              tx-eid false]
+                         [med-eid (d/entid (db) :rss/name)     "Meduza"            tx-eid false]
+                         [med-eid (d/entid (db) :rss/url)      "https://meduza.io" tx-eid false]]
                         (map vec->datom))
             formatted-changes (db/format-changes {:db-after (db)
                                                   :tx-data datoms})]
@@ -47,7 +47,7 @@
                  :event/data {:rss/id med-id}}]
                formatted-changes))))
     (testing "with changes from an updated entity"
-      (let [datoms (->> [[tx-eid   (d/entid (db) :db/txInstant) now                tx-eid true]
+      (let [datoms (->> [[tx-eid  (d/entid (db) :db/txInstant) now                 tx-eid true]
                          [med-eid (d/entid (db) :rss/url)      "https://meduza.ru" tx-eid true]
                          [med-eid (d/entid (db) :rss/url)      "https://meduza.io" tx-eid false]]
                         (map vec->datom))
