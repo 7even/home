@@ -52,23 +52,29 @@
   (s/close! @ws-conn)
   (reset! ws-conn nil))
 
+(defn local-file-url [filename]
+  (-> (str "files/" filename)
+      resource
+      str))
+
+(defn create-rss
+  ([] (create-rss {}))
+  ([rss-attrs]
+   (let [attrs (merge {:rss/id (d/squuid)
+                       :rss/name "Vedomosti"
+                       :rss/url (local-file-url "vedomosti.xml")}
+                      rss-attrs)]
+     (d/transact @db-conn [attrs])
+     (:rss/id attrs))))
+
 (defn create-rss-feeds
   ([]
-   (let [ved-url (-> "files/vedomosti.xml"
-                     resource
-                     str)
-         med-url (-> "files/meduza.xml"
-                     resource
-                     str)]
+   (let [ved-url (local-file-url "vedomosti.xml")
+         med-url (local-file-url "meduza.xml")]
      (create-rss-feeds ved-url med-url)))
   ([ved-url med-url]
-   (let [ved-id (d/squuid)
-         med-id (d/squuid)]
-     (d/transact @db-conn
-                 [{:rss/id ved-id
-                   :rss/name "Vedomosti"
-                   :rss/url ved-url}
-                  {:rss/id med-id
-                   :rss/name "Meduza"
-                   :rss/url med-url}])
-     [ved-id med-id])))
+   (mapv create-rss
+         [{:rss/name "Vedomosti"
+           :rss/url ved-url}
+          {:rss/name "Meduza"
+           :rss/url med-url}])))
