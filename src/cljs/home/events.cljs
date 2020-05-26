@@ -12,6 +12,42 @@
                  (fn [db [_ state]]
                    (update db :remote merge state)))
 
+(rf/reg-event-db ::rss-created
+                 (fn [db [_ {:rss/keys [id] :as rss-attrs}]]
+                   (cond-> db
+                     true
+                     (update-in [:remote :rss] conj rss-attrs)
+                     (seq (get-in db [:local :rss]))
+                     (assoc-in [:local :rss id]
+                               (select-keys rss-attrs [:rss/name :rss/url])))))
+
+(rf/reg-event-db ::rss-updated
+                 (fn [db [_ {:rss/keys [id] :as new-rss-attrs}]]
+                   (cond-> db
+                     true
+                     (update-in [:remote :rss]
+                                (fn [feeds]
+                                  (map (fn [feed]
+                                         (if (= (:rss/id feed) id)
+                                           (merge feed new-rss-attrs)
+                                           feed))
+                                       feeds)))
+                     (seq (get-in db [:local :rss]))
+                     (update-in [:local :rss id]
+                                merge
+                                (dissoc new-rss-attrs :rss/id)))))
+
+(rf/reg-event-db ::rss-deleted
+                 (fn [db [_ {:rss/keys [id]}]]
+                   (cond-> db
+                     true
+                     (update-in [:remote :rss]
+                                (fn [feeds]
+                                  (remove #(= (:rss/id %) id)
+                                          feeds)))
+                     (seq (get-in db [:local :rss]))
+                     (update-in [:local :rss] dissoc id))))
+
 (rf/reg-event-db ::begin-editing-rss
                  (fn [db]
                    (assoc-in db
