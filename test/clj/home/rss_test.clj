@@ -8,22 +8,21 @@
 (deftest get-news-test
   (let [[ved-id med-id] (create-rss-feeds)
         news (rss/get-news (db))]
-    (is (= 2 (count news)))
-    (let [[vedomosti meduza] news]
-      (is (= [:rss/id :rss/name :rss/url :rss/news] (keys vedomosti)))
-      (is (= ved-id (:rss/id vedomosti)))
-      (is (= "Vedomosti" (:rss/name vedomosti)))
-      (is (= 3 (-> vedomosti :rss/news count)))
-      (is (= [:rss/id :rss/name :rss/url :rss/news] (keys meduza)))
-      (is (= med-id (:rss/id meduza)))
-      (is (= "Meduza" (:rss/name meduza)))
-      (is (= 3 (-> meduza :rss/news count))))))
+    (is (= #{{:rss/id ved-id
+              :rss/name "Vedomosti"
+              :rss/url (local-file-url "vedomosti.xml")
+              :rss/news (-> "vedomosti.xml" local-file-url rss/load-news)}
+             {:rss/id med-id
+              :rss/name "Meduza"
+              :rss/url (local-file-url "meduza.xml")
+              :rss/news (-> "meduza.xml" local-file-url rss/load-news)}}
+           (set news)))))
 
-(deftest get-rss-test
+(deftest serialize-test
   (let [[ved-id] (create-rss-feeds)
         feed (rss/serialize (db) ved-id)]
-    (is (= [:rss/id :rss/name :rss/url :rss/news]
-           (keys feed)))
-    (is (= ved-id (:rss/id feed)))
-    (is (= "Vedomosti" (:rss/name feed)))
-    (is (= 3 (-> feed :rss/news count)))))
+    (is (= {:rss/id ved-id
+            :rss/name "Vedomosti"
+            :rss/url (local-file-url "vedomosti.xml")
+            :rss/news (-> "vedomosti.xml" local-file-url rss/load-news)}
+           feed))))
