@@ -1,6 +1,12 @@
 (ns home.db.rss
   (:require [datomic.api :as d]))
 
+(defn create-rss-tx [attrs]
+  (assoc attrs :rss/id (d/squuid)))
+
+(defn delete-rss-tx [id]
+  [:db/retractEntity [:rss/id id]])
+
 (defn list-rss [db]
   (->> (d/q '[:find [?rss ...]
               :where [?rss :rss/id]]
