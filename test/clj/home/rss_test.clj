@@ -2,18 +2,23 @@
   (:require [clojure.test :refer :all]
             [home.db.rss :as db.rss]
             [home.rss :as rss]
-            [home.test :refer :all]))
+            [home.test :refer :all]
+            [home.websocket.utils :refer [take-from-ws]]))
 
-(use-fixtures :each with-db)
+(use-fixtures :each with-db with-ws)
 
 (deftest synchronize-rss-test
   (let [[ved-id med-id] (create-rss-feeds)
         command-id (random-uuid)]
-    (rss/synchronize-rss @db-conn
+    (rss/synchronize-rss {:db-conn @db-conn
+                          :ws-conn @ws-conn}
                          [{:rss/name "Sports.ru"
-                           :rss/url "https://www.sports.ru/rss/main.xml"}
+                           :rss/url "https://www.sports.ru/rss/main.xml"
+                           :foo/bar :baz}
                           {:rss/id ved-id
-                           :rss/url (local-file-url "meduza.xml")}]
+                           :rss/name "Vedomosti"
+                           :rss/url (local-file-url "meduza.xml")
+                           :foo/bar :baz}]
                          command-id)
     (let [updated-feeds (db.rss/list-rss (db))
           ids (->> updated-feeds (map :rss/id) set)]
@@ -28,7 +33,17 @@
                (local-file-url "meduza.xml")}
              (->> updated-feeds
                   (map :rss/url)
-                  set))))))
+                  set)))
+      (is (nil? (take-from-ws @ws-conn))))
+    (rss/synchronize-rss {:db-conn @db-conn
+                          :ws-conn @ws-conn}
+                         [{:rss/name "foobar"}
+                          {:rss/id 1
+                           :rss/url "foo://bar.baz"}]
+                         command-id)
+    (let [{:command/keys [id error]} (take-from-ws (server->client))]
+      (is (= command-id id))
+      (is (some? (re-find #":rss/id" error))))))
 
 (deftest get-news-test
   (let [[ved-id med-id] (create-rss-feeds)
