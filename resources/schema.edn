@@ -8,4 +8,7 @@
                        {:db/ident :rss/url
                         :db/valueType :db.type/string
                         :db/cardinality :db.cardinality/one
-                        :db/unique :db.unique/value}]]}}
+                        :db/unique :db.unique/value}]
+                      [{:db/ident :command/id
+                        :db/valueType :db.type/uuid
+                        :db/cardinality :db.cardinality/one}]]}}

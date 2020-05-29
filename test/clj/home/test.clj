@@ -57,6 +57,9 @@
       resource
       str))
 
+(defn random-uuid []
+  (java.util.UUID/randomUUID))
+
 (defn create-rss
   ([] (create-rss {}))
   ([rss-attrs]

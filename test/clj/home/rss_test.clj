@@ -7,12 +7,14 @@
 (use-fixtures :each with-db)
 
 (deftest synchronize-rss-test
-  (let [[ved-id med-id] (create-rss-feeds)]
+  (let [[ved-id med-id] (create-rss-feeds)
+        command-id (random-uuid)]
     (rss/synchronize-rss @db-conn
                          [{:rss/name "Sports.ru"
                            :rss/url "https://www.sports.ru/rss/main.xml"}
                           {:rss/id ved-id
-                           :rss/url (local-file-url "meduza.xml")}])
+                           :rss/url (local-file-url "meduza.xml")}]
+                         command-id)
     (let [updated-feeds (db.rss/list-rss (db))
           ids (->> updated-feeds (map :rss/id) set)]
       (is (= 2 (count ids)))
