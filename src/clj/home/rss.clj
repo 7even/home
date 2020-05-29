@@ -4,7 +4,8 @@
             [datomic.api :as d]
             [home.db.rss :as db.rss]
             [home.rss.parser :refer [xml->news]]
-            [home.websocket.utils :refer [send-to-ws]]))
+            [home.websocket.utils :refer [send-to-ws]])
+  (:import javax.xml.stream.XMLStreamException))
 
 (require 'home.spec)
 
@@ -12,8 +13,27 @@
   (s/coll-of (s/keys :req [:rss/name :rss/url]
                      :opt [:rss/id])))
 
+(defn load-news [url]
+  (-> url slurp xml->news))
+
+(defn- url-invalid? [{:rss/keys [url]}]
+  (try
+    (load-news url)
+    false
+    (catch XMLStreamException e
+      true)))
+
 (defn synchronize-rss [{:keys [db-conn ws-conn]} new-rss-list command-id]
-  (if (s/valid? ::synchronize new-rss-list)
+  (cond
+    (not (s/valid? ::synchronize new-rss-list))
+    (send-to-ws ws-conn
+                {:command/id command-id
+                 :command/error (s/explain-str ::synchronize new-rss-list)})
+    (some url-invalid? new-rss-list)
+    (send-to-ws ws-conn
+                {:command/id command-id
+                 :command/error "This is not an RSS url."})
+    :else
     (let [old-ids (->> (db.rss/list-rss (d/db db-conn))
                        (map :rss/id)
                        set)
@@ -33,13 +53,7 @@
                      (map db.rss/delete-rss-tx deleted-feed-ids)
                      [{:db/id "datomic.tx"
                        :command/id command-id}])]
-      @(d/transact db-conn tx))
-    (send-to-ws ws-conn
-                {:command/id command-id
-                 :command/error (s/explain-str ::synchronize new-rss-list)})))
-
-(defn load-news [url]
-  (-> url slurp xml->news))
+      @(d/transact db-conn tx))))
 
 (defn- assoc-news [rss]
   (assoc rss :rss/news (-> rss :rss/url load-news)))
