@@ -54,6 +54,24 @@
                            command-id)
       (is (= {:command/id command-id
               :command/error "This is not an RSS url."}
+             (take-from-ws (server->client)))))
+    (testing "with 404 url"
+      (rss/synchronize-rss {:db-conn @db-conn
+                            :ws-conn @ws-conn}
+                           [{:rss/name "Not Found"
+                             :rss/url "https://httpbin.org/i-dont-exist"}]
+                           command-id)
+      (is (= {:command/id command-id
+              :command/error "This is not an RSS url."}
+             (take-from-ws (server->client)))))
+    (testing "with unknown host"
+      (rss/synchronize-rss {:db-conn @db-conn
+                            :ws-conn @ws-conn}
+                           [{:rss/name "Unknown host"
+                             :rss/url "https://foo.bar"}]
+                           command-id)
+      (is (= {:command/id command-id
+              :command/error "This is not an RSS url."}
              (take-from-ws (server->client)))))))
 
 (deftest get-news-test

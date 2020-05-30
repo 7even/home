@@ -4,8 +4,7 @@
             [datomic.api :as d]
             [home.db.rss :as db.rss]
             [home.rss.parser :refer [xml->news]]
-            [home.websocket.utils :refer [send-to-ws]])
-  (:import javax.xml.stream.XMLStreamException))
+            [home.websocket.utils :refer [send-to-ws]]))
 
 (require 'home.spec)
 
@@ -21,7 +20,7 @@
   (try
     (load-news url)
     false
-    (catch XMLStreamException e
+    (catch Exception e
       true)))
 
 (defn synchronize-rss [{:keys [db-conn ws-conn]} new-rss-list command-id]
