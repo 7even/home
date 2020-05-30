@@ -11,7 +11,8 @@
 
 (s/def ::synchronize
   (s/coll-of (s/keys :req [:rss/name :rss/url]
-                     :opt [:rss/id])))
+                     :opt [:rss/id])
+             :kind vector?))
 
 (defn load-news [url]
   (-> url slurp xml->news))
