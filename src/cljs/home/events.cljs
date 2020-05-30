@@ -4,36 +4,38 @@
 
 (rf/reg-event-fx ::initialize
                  (fn []
-                   {:db {:remote {:rss []}
-                         :local {:rss {}}}
+                   {:db {:commands {}
+                         :rss {:remote []
+                               :local {}
+                               :sync-in-progress? false}}
                     :initialize-ws nil}))
 
 (rf/reg-event-db ::state-loaded
                  (fn [db [_ state]]
-                   (update db :remote merge state)))
+                   (assoc-in db [:rss :remote] (:rss state))))
 
 (rf/reg-event-db ::rss-created
                  (fn [db [_ {:rss/keys [id] :as rss-attrs}]]
                    (cond-> db
                      true
-                     (update-in [:remote :rss] conj rss-attrs)
-                     (seq (get-in db [:local :rss]))
-                     (assoc-in [:local :rss id]
+                     (update-in [:rss :remote] conj rss-attrs)
+                     (seq (get-in db [:rss :local]))
+                     (assoc-in [:rss :local id]
                                (select-keys rss-attrs [:rss/name :rss/url])))))
 
 (rf/reg-event-db ::rss-updated
                  (fn [db [_ {:rss/keys [id] :as new-rss-attrs}]]
                    (cond-> db
                      true
-                     (update-in [:remote :rss]
+                     (update-in [:rss :remote]
                                 (fn [feeds]
                                   (map (fn [feed]
                                          (if (= (:rss/id feed) id)
                                            (merge feed new-rss-attrs)
                                            feed))
                                        feeds)))
-                     (seq (get-in db [:local :rss]))
-                     (update-in [:local :rss id]
+                     (seq (get-in db [:rss :local]))
+                     (update-in [:rss :local id]
                                 merge
                                 (dissoc new-rss-attrs :rss/id)))))
 
@@ -41,18 +43,18 @@
                  (fn [db [_ {:rss/keys [id]}]]
                    (cond-> db
                      true
-                     (update-in [:remote :rss]
+                     (update-in [:rss :remote]
                                 (fn [feeds]
                                   (remove #(= (:rss/id %) id)
                                           feeds)))
-                     (seq (get-in db [:local :rss]))
-                     (update-in [:local :rss] dissoc id))))
+                     (seq (get-in db [:rss :local]))
+                     (update-in [:rss :local] dissoc id))))
 
 (rf/reg-event-db ::begin-editing-rss
                  (fn [db]
                    (assoc-in db
-                             [:local :rss]
-                             (->> (get-in db [:remote :rss])
+                             [:rss :local]
+                             (->> (get-in db [:rss :remote])
                                   (reduce (fn [feeds feed]
                                             (assoc feeds
                                                    (:rss/id feed)
@@ -63,15 +65,28 @@
 (rf/reg-event-db ::change-rss-name
                  (fn [db [_ id new-name]]
                    (assoc-in db
-                             [:local :rss id :rss/name]
+                             [:rss :local id :rss/name]
                              new-name)))
 
 (rf/reg-event-db ::change-rss-url
                  (fn [db [_ id new-url]]
                    (assoc-in db
-                             [:local :rss id :rss/url]
+                             [:rss :local id :rss/url]
                              new-url)))
+
+(rf/reg-event-fx ::synchronize-rss
+                 (fn [{:keys [db]}]
+                   (let [command-id (random-uuid)
+                         feeds (mapv (fn [[id attrs]]
+                                       (merge {:rss/id id} attrs))
+                                     (get-in db [:rss :local]))]
+                     {:db (-> db
+                              (assoc-in [:commands command-id] ::rss-synchronized)
+                              (assoc-in [:rss :sync-in-progress?] true))
+                      :send-to-ws {:command/id command-id
+                                   :command/name :rss/synchronize
+                                   :command/data feeds}})))
 
 (rf/reg-event-db ::stop-editing-rss
                  (fn [db]
-                   (assoc-in db [:local :rss] (array-map))))
+                   (assoc-in db [:rss :local] (array-map))))

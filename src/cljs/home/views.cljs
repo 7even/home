@@ -36,8 +36,8 @@
                                                          (-> % .-target .-value)])}]]])]]
    [:div.modal-footer
     [:button.btn.btn-primary
-     {:on-click #(do (println "Saving...")
-                     (modals/close-modal!))}
+     {:on-click #(rf/dispatch [::events/synchronize-rss])
+      :disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
      "Save"]]])
 
 (defn news-item [{:keys [title url image-url description published-at source]}]

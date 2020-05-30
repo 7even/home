@@ -3,11 +3,15 @@
 
 (rf/reg-sub ::rss-feeds
             (fn [db]
-              (get-in db [:local :rss])))
+              (get-in db [:rss :local])))
+
+(rf/reg-sub ::rss-sync-in-progress?
+            (fn [db]
+              (get-in db [:rss :sync-in-progress?])))
 
 (rf/reg-sub ::rss-items
             (fn [db]
-              (->> (get-in db [:remote :rss])
+              (->> (get-in db [:rss :remote])
                    (mapcat (fn [rss]
                              (map #(assoc % :source (:rss/name rss))
                                   (:rss/news rss))))

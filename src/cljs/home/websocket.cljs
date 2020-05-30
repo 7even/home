@@ -1,6 +1,7 @@
 (ns home.websocket
   (:require [re-frame.core :as rf]
             [wscljs.client :as ws]
+            [wscljs.format :as fmt]
             [cljs.reader :refer [read-string]]))
 
 (defn- socket-url []
@@ -44,3 +45,7 @@
              (println "Terminating WS connection...")
              (ws/close @connection)
              (reset! connection nil)))
+
+(rf/reg-fx :send-to-ws
+           (fn [payload]
+             (ws/send @connection payload fmt/edn)))
