@@ -80,12 +80,15 @@
                          feeds (mapv (fn [[id attrs]]
                                        (merge {:rss/id id} attrs))
                                      (get-in db [:rss :local]))]
-                     {:db (-> db
-                              (assoc-in [:commands command-id] ::rss-synchronized)
-                              (assoc-in [:rss :sync-in-progress?] true))
+                     {:db (assoc-in db [:rss :sync-in-progress?] true)
+                      :enqueue-command [command-id ::rss-synchronized :rss-failed-to-synchronize]
                       :send-to-ws {:command/id command-id
                                    :command/name :rss/synchronize
                                    :command/data feeds}})))
+
+(rf/reg-event-db ::rss-synchronized
+                 (fn [db]
+                   (assoc-in db [:rss :sync-in-progress?] false)))
 
 (rf/reg-event-db ::stop-editing-rss
                  (fn [db]
