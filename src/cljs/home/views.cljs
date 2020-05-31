@@ -48,6 +48,10 @@
                      ^{:key idx} [rss-feed idx rss-attrs])
                    @(rf/subscribe [::subs/rss-feeds]))]]]
    [:div.modal-footer
+    [:button.btn.btn-secondary
+     {:on-click #(rf/dispatch [::events/add-rss])
+      :disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
+     "New RSS feed"]
     [:button.btn.btn-primary
      {:on-click #(rf/dispatch [::events/synchronize-rss])
       :disabled @(rf/subscribe [::subs/rss-submit-disabled?])}

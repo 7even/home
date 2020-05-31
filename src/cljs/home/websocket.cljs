@@ -18,14 +18,14 @@
 
 (defn- handle-event [{:event/keys [name data]
                       command-id :command/id}]
-  (when-let [{:keys [success]} (get @commands command-id)]
-    (rf/dispatch [success])
-    (swap! commands dissoc command-id))
   (case name
     :rss/created (rf/dispatch [:home.events/rss-created data])
     :rss/updated (rf/dispatch [:home.events/rss-updated data])
     :rss/deleted (rf/dispatch [:home.events/rss-deleted data])
-    (println "Server sent an unknown event:" name)))
+    (println "Server sent an unknown event:" name))
+  (when-let [{:keys [success]} (get @commands command-id)]
+    (rf/dispatch [success])
+    (swap! commands dissoc command-id)))
 
 (defn handle-server-message [{state :state/data
                               events :events

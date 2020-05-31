@@ -2,6 +2,12 @@
   (:require [re-frame.core :as rf]
             home.websocket))
 
+(defn- copy-feeds-to-local [db]
+  (assoc-in db
+            [:rss :local]
+            (mapv #(select-keys % [:rss/id :rss/name :rss/url])
+                  (get-in db [:rss :remote]))))
+
 (defn- update-feed [feeds id new-attrs]
   (mapv (fn [feed]
           (if (= (:rss/id feed) id)
@@ -67,11 +73,15 @@
                                   (remove-feed feeds id))))))
 
 (rf/reg-event-db ::begin-editing-rss
+                 copy-feeds-to-local)
+
+(rf/reg-event-db ::add-rss
                  (fn [db]
-                   (assoc-in db
-                             [:rss :local]
-                             (mapv #(select-keys % [:rss/id :rss/name :rss/url])
-                                   (get-in db [:rss :remote])))))
+                   (update-in db
+                              [:rss :local]
+                              conj
+                              {:rss/name ""
+                               :rss/url ""})))
 
 (rf/reg-event-db ::change-rss-name
                  (fn [db [_ idx new-name]]
@@ -100,7 +110,9 @@
 
 (rf/reg-event-db ::rss-synchronized
                  (fn [db]
-                   (assoc-in db [:rss :sync-in-progress?] false)))
+                   (-> db
+                       (assoc-in [:rss :sync-in-progress?] false)
+                       copy-feeds-to-local)))
 
 (rf/reg-event-db ::stop-editing-rss
                  (fn [db]
