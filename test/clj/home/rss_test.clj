@@ -7,12 +7,15 @@
 
 (use-fixtures :each with-db with-ws)
 
+(defn ws-config []
+  {:db-conn @db-conn
+   :ws-conn @ws-conn})
+
 (deftest synchronize-rss-test
   (let [[ved-id med-id] (create-rss-feeds)
         command-id (random-uuid)]
     (testing "with valid params"
-      (rss/synchronize-rss {:db-conn @db-conn
-                            :ws-conn @ws-conn}
+      (rss/synchronize-rss (ws-config)
                            [{:rss/name "Sports.ru"
                              :rss/url "https://www.sports.ru/rss/main.xml"
                              :foo/bar :baz}
@@ -36,9 +39,18 @@
                     (map :rss/url)
                     set)))
         (is (nil? (take-from-ws @ws-conn)))))
+    (testing "with duplicate :rss/url"
+      (rss/synchronize-rss (ws-config)
+                           [{:rss/name "First RSS"
+                             :rss/url "https://example.com"}
+                            {:rss/name "Second RSS"
+                             :rss/url "https://example.com"}]
+                           command-id)
+      (is (= {:command/id command-id
+              :command/error "Some urls are not unique."}
+             (take-from-ws (server->client)))))
     (testing "with invalid params"
-      (rss/synchronize-rss {:db-conn @db-conn
-                            :ws-conn @ws-conn}
+      (rss/synchronize-rss (ws-config)
                            [{:rss/name "foobar"}
                             {:rss/id 1
                              :rss/url "foo://bar.baz"}]
@@ -47,8 +59,7 @@
         (is (= command-id id))
         (is (some? (re-find #":rss/id" error)))))
     (testing "with non-rss url"
-      (rss/synchronize-rss {:db-conn @db-conn
-                            :ws-conn @ws-conn}
+      (rss/synchronize-rss (ws-config)
                            [{:rss/name "Invalid"
                              :rss/url "https://httpbin.org/ip"}]
                            command-id)
@@ -56,8 +67,7 @@
               :command/error "This is not an RSS url."}
              (take-from-ws (server->client)))))
     (testing "with 404 url"
-      (rss/synchronize-rss {:db-conn @db-conn
-                            :ws-conn @ws-conn}
+      (rss/synchronize-rss (ws-config)
                            [{:rss/name "Not Found"
                              :rss/url "https://httpbin.org/i-dont-exist"}]
                            command-id)
@@ -65,8 +75,7 @@
               :command/error "This is not an RSS url."}
              (take-from-ws (server->client)))))
     (testing "with unknown host"
-      (rss/synchronize-rss {:db-conn @db-conn
-                            :ws-conn @ws-conn}
+      (rss/synchronize-rss (ws-config)
                            [{:rss/name "Unknown host"
                              :rss/url "https://foo.bar"}]
                            command-id)
