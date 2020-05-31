@@ -19,21 +19,22 @@
      [:span "×"]]]
    [:div.modal-body.pb-0
     [:form
-     (for [{:rss/keys [id name url]} @(rf/subscribe [::subs/rss-feeds])]
-       ^{:key id}
-       [:div.form-row.form-group
-        [:div.col-4
-         [:input.form-control {:type "text"
-                               :value name
-                               :on-change #(rf/dispatch [::events/change-rss-name
-                                                         id
-                                                         (-> % .-target .-value)])}]]
-        [:div.col-8
-         [:input.form-control {:type "text"
-                               :value url
-                               :on-change #(rf/dispatch [::events/change-rss-url
-                                                         id
-                                                         (-> % .-target .-value)])}]]])]]
+     (map-indexed (fn [idx {:rss/keys [id name url]}]
+                    ^{:key idx}
+                    [:div.form-row.form-group
+                     [:div.col-4
+                      [:input.form-control {:type "text"
+                                            :value name
+                                            :on-change #(rf/dispatch [::events/change-rss-name
+                                                                      idx
+                                                                      (-> % .-target .-value)])}]]
+                     [:div.col-8
+                      [:input.form-control {:type "text"
+                                            :value url
+                                            :on-change #(rf/dispatch [::events/change-rss-url
+                                                                      idx
+                                                                      (-> % .-target .-value)])}]]])
+                  @(rf/subscribe [::subs/rss-feeds]))]]
    [:div.modal-footer
     [:button.btn.btn-primary
      {:on-click #(rf/dispatch [::events/synchronize-rss])

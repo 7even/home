@@ -71,18 +71,12 @@
                                    (get-in db [:rss :remote])))))
 
 (rf/reg-event-db ::change-rss-name
-                 (fn [db [_ id new-name]]
-                   (update-in db
-                              [:rss :local]
-                              (fn [feeds]
-                                (update-feed feeds id {:rss/name new-name})))))
+                 (fn [db [_ idx new-name]]
+                   (assoc-in db [:rss :local idx :rss/name] new-name)))
 
 (rf/reg-event-db ::change-rss-url
-                 (fn [db [_ id new-url]]
-                   (update-in db
-                              [:rss :local]
-                              (fn [feeds]
-                                (update-feed feeds id {:rss/url new-url})))))
+                 (fn [db [_ idx new-url]]
+                   (assoc-in db [:rss :local idx :rss/url] new-url)))
 
 (rf/reg-event-fx ::synchronize-rss
                  (fn [{:keys [db]}]
