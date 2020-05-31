@@ -14,11 +14,14 @@
        (remove #(= (:rss/id %) id))
        vec))
 
+(defn- rss-form-visible? [db]
+  (some? (get-in db [:rss :local])))
+
 (rf/reg-event-fx ::initialize
                  (fn []
                    {:db {:commands {}
                          :rss {:remote []
-                               :local []
+                               :local nil
                                :sync-in-progress? false}}
                     :initialize-ws nil}))
 
@@ -31,7 +34,7 @@
                    (cond-> db
                      true
                      (update-in [:rss :remote] conj rss-attrs)
-                     (seq (get-in db [:rss :local]))
+                     (rss-form-visible? db)
                      (update-in [:rss :local]
                                 conj
                                 (select-keys rss-attrs [:rss/id :rss/name :rss/url])))))
@@ -43,7 +46,7 @@
                      (update-in [:rss :remote]
                                 (fn [feeds]
                                   (update-feed feeds id new-rss-attrs)))
-                     (seq (get-in db [:rss :local]))
+                     (rss-form-visible? db)
                      (update-in [:rss :local]
                                 (fn [feeds]
                                   (update-feed feeds
@@ -58,7 +61,7 @@
                      (update-in [:rss :remote]
                                 (fn [feeds]
                                   (remove-feed feeds id)))
-                     (seq (get-in db [:rss :local]))
+                     (rss-form-visible? db)
                      (update-in [:rss :local]
                                 (fn [feeds]
                                   (remove-feed feeds id))))))
@@ -101,4 +104,4 @@
 
 (rf/reg-event-db ::stop-editing-rss
                  (fn [db]
-                   (assoc-in db [:rss :local] [])))
+                   (assoc-in db [:rss :local] nil)))
