@@ -2,11 +2,23 @@
   (:require [re-frame.core :as rf]
             home.websocket))
 
+(defn- update-feed [feeds id new-attrs]
+  (mapv (fn [feed]
+          (if (= (:rss/id feed) id)
+            (merge feed new-attrs)
+            feed))
+        feeds))
+
+(defn- remove-feed [feeds id]
+  (->> feeds
+       (remove #(= (:rss/id %) id))
+       vec))
+
 (rf/reg-event-fx ::initialize
                  (fn []
                    {:db {:commands {}
                          :rss {:remote []
-                               :local {}
+                               :local []
                                :sync-in-progress? false}}
                     :initialize-ws nil}))
 
@@ -20,8 +32,9 @@
                      true
                      (update-in [:rss :remote] conj rss-attrs)
                      (seq (get-in db [:rss :local]))
-                     (assoc-in [:rss :local id]
-                               (select-keys rss-attrs [:rss/name :rss/url])))))
+                     (update-in [:rss :local]
+                                conj
+                                (select-keys rss-attrs [:rss/id :rss/name :rss/url])))))
 
 (rf/reg-event-db ::rss-updated
                  (fn [db [_ {:rss/keys [id] :as new-rss-attrs}]]
@@ -29,15 +42,14 @@
                      true
                      (update-in [:rss :remote]
                                 (fn [feeds]
-                                  (map (fn [feed]
-                                         (if (= (:rss/id feed) id)
-                                           (merge feed new-rss-attrs)
-                                           feed))
-                                       feeds)))
+                                  (update-feed feeds id new-rss-attrs)))
                      (seq (get-in db [:rss :local]))
-                     (update-in [:rss :local id]
-                                merge
-                                (dissoc new-rss-attrs :rss/id)))))
+                     (update-in [:rss :local]
+                                (fn [feeds]
+                                  (update-feed feeds
+                                               id
+                                               (select-keys new-rss-attrs
+                                                            [:rss/id :rss/name :rss/url])))))))
 
 (rf/reg-event-db ::rss-deleted
                  (fn [db [_ {:rss/keys [id]}]]
@@ -45,46 +57,41 @@
                      true
                      (update-in [:rss :remote]
                                 (fn [feeds]
-                                  (remove #(= (:rss/id %) id)
-                                          feeds)))
+                                  (remove-feed feeds id)))
                      (seq (get-in db [:rss :local]))
-                     (update-in [:rss :local] dissoc id))))
+                     (update-in [:rss :local]
+                                (fn [feeds]
+                                  (remove-feed feeds id))))))
 
 (rf/reg-event-db ::begin-editing-rss
                  (fn [db]
                    (assoc-in db
                              [:rss :local]
-                             (->> (get-in db [:rss :remote])
-                                  (reduce (fn [feeds feed]
-                                            (assoc feeds
-                                                   (:rss/id feed)
-                                                   (select-keys feed [:rss/name :rss/url])))
-                                          {})
-                                  (into (array-map))))))
+                             (mapv #(select-keys % [:rss/id :rss/name :rss/url])
+                                   (get-in db [:rss :remote])))))
 
 (rf/reg-event-db ::change-rss-name
                  (fn [db [_ id new-name]]
-                   (assoc-in db
-                             [:rss :local id :rss/name]
-                             new-name)))
+                   (update-in db
+                              [:rss :local]
+                              (fn [feeds]
+                                (update-feed feeds id {:rss/name new-name})))))
 
 (rf/reg-event-db ::change-rss-url
                  (fn [db [_ id new-url]]
-                   (assoc-in db
-                             [:rss :local id :rss/url]
-                             new-url)))
+                   (update-in db
+                              [:rss :local]
+                              (fn [feeds]
+                                (update-feed feeds id {:rss/url new-url})))))
 
 (rf/reg-event-fx ::synchronize-rss
                  (fn [{:keys [db]}]
-                   (let [command-id (random-uuid)
-                         feeds (mapv (fn [[id attrs]]
-                                       (merge {:rss/id id} attrs))
-                                     (get-in db [:rss :local]))]
+                   (let [command-id (random-uuid)]
                      {:db (assoc-in db [:rss :sync-in-progress?] true)
                       :enqueue-command [command-id ::rss-synchronized :rss-failed-to-synchronize]
                       :send-to-ws {:command/id command-id
                                    :command/name :rss/synchronize
-                                   :command/data feeds}})))
+                                   :command/data (get-in db [:rss :local])}})))
 
 (rf/reg-event-db ::rss-synchronized
                  (fn [db]
@@ -92,4 +99,4 @@
 
 (rf/reg-event-db ::stop-editing-rss
                  (fn [db]
-                   (assoc-in db [:rss :local] (array-map))))
+                   (assoc-in db [:rss :local] [])))

@@ -19,7 +19,7 @@
      [:span "×"]]]
    [:div.modal-body.pb-0
     [:form
-     (for [[id {:rss/keys [name url]}] @(rf/subscribe [::subs/rss-feeds])]
+     (for [{:rss/keys [id name url]} @(rf/subscribe [::subs/rss-feeds])]
        ^{:key id}
        [:div.form-row.form-group
         [:div.col-4
