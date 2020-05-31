@@ -81,7 +81,13 @@
                            command-id)
       (is (= {:command/id command-id
               :command/error "This is not an RSS url."}
-             (take-from-ws (server->client)))))))
+             (take-from-ws (server->client)))))
+    (testing "with an empty feeds list"
+      (rss/synchronize-rss (ws-config)
+                           []
+                           command-id)
+      (is (empty? (db.rss/list-rss (db))))
+      (is (nil? (take-from-ws (server->client)))))))
 
 (deftest get-news-test
   (let [[ved-id med-id] (create-rss-feeds)

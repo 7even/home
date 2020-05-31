@@ -29,9 +29,10 @@
     (send-to-ws ws-conn
                 {:command/id command-id
                  :command/error (s/explain-str ::synchronize new-rss-list)})
-    (not (->> new-rss-list
-              (map :rss/url)
-              (apply distinct?)))
+    (and (seq new-rss-list)
+         (not (->> new-rss-list
+                   (map :rss/url)
+                   (apply distinct?))))
     (send-to-ws ws-conn
                 {:command/id command-id
                  :command/error "Some urls are not unique."})
