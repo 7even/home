@@ -20,14 +20,19 @@
                           :on-change #(rf/dispatch [::events/change-rss-name
                                                     idx
                                                     (-> % .-target .-value)])}]]
-   [:div.col-8
+   [:div.col-7
     [:input.form-control {:type "text"
                           :value url
                           :class (when @(rf/subscribe [::subs/rss-url-invalid? idx])
                                    :is-invalid)
                           :on-change #(rf/dispatch [::events/change-rss-url
                                                     idx
-                                                    (-> % .-target .-value)])}]]])
+                                                    (-> % .-target .-value)])}]]
+   [:div.col-1
+    [:button.close {:type "button"
+                    :style {:margin-top "5px"}
+                    :on-click #(rf/dispatch [::events/delete-rss idx])}
+     [:span "×"]]]])
 
 (defn rss-manager []
   [:div

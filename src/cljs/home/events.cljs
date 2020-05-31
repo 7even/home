@@ -78,6 +78,14 @@
                  (fn [db [_ idx new-url]]
                    (assoc-in db [:rss :local idx :rss/url] new-url)))
 
+(rf/reg-event-db ::delete-rss
+                 (fn [db [_ idx]]
+                   (update-in db
+                              [:rss :local]
+                              #(->> (concat (subvec % 0 idx)
+                                            (subvec % (inc idx) (count %)))
+                                    vec))))
+
 (rf/reg-event-fx ::synchronize-rss
                  (fn [{:keys [db]}]
                    (let [command-id (random-uuid)]
