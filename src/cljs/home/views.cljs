@@ -15,12 +15,16 @@
    [:div.col-4
     [:input.form-control {:type "text"
                           :value name
+                          :class (when @(rf/subscribe [::subs/rss-name-invalid? idx])
+                                   :is-invalid)
                           :on-change #(rf/dispatch [::events/change-rss-name
                                                     idx
                                                     (-> % .-target .-value)])}]]
    [:div.col-8
     [:input.form-control {:type "text"
                           :value url
+                          :class (when @(rf/subscribe [::subs/rss-url-invalid? idx])
+                                   :is-invalid)
                           :on-change #(rf/dispatch [::events/change-rss-url
                                                     idx
                                                     (-> % .-target .-value)])}]]])
@@ -34,13 +38,14 @@
      [:span "×"]]]
    [:div.modal-body.pb-0
     [:form
-     (map-indexed (fn [idx rss-attrs]
-                    ^{:key idx} [rss-feed idx rss-attrs])
-                  @(rf/subscribe [::subs/rss-feeds]))]]
+     [:fieldset {:disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
+      (map-indexed (fn [idx rss-attrs]
+                     ^{:key idx} [rss-feed idx rss-attrs])
+                   @(rf/subscribe [::subs/rss-feeds]))]]]
    [:div.modal-footer
     [:button.btn.btn-primary
      {:on-click #(rf/dispatch [::events/synchronize-rss])
-      :disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
+      :disabled @(rf/subscribe [::subs/rss-submit-disabled?])}
      "Save"]]])
 
 (defn news-item [{:keys [title url image-url description published-at source]}]
