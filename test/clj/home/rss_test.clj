@@ -16,8 +16,8 @@
         command-id (random-uuid)]
     (testing "with valid params"
       (rss/synchronize-rss (ws-config)
-                           [{:rss/name "Sports.ru"
-                             :rss/url "https://www.sports.ru/rss/main.xml"
+                           [{:rss/name "lenta.ru"
+                             :rss/url (local-file-url "lenta.xml")
                              :foo/bar :baz}
                             {:rss/id ved-id
                              :rss/name "Vedomosti"
@@ -29,16 +29,16 @@
         (is (= 2 (count ids)))
         (is (not (ids med-id)))
         (is (ids ved-id))
-        (is (= #{"Sports.ru" "Vedomosti"}
+        (is (= #{"lenta.ru" "Vedomosti"}
                (->> updated-feeds
                     (map :rss/name)
                     set)))
-        (is (= #{"https://www.sports.ru/rss/main.xml"
+        (is (= #{(local-file-url "lenta.xml")
                  (local-file-url "meduza.xml")}
                (->> updated-feeds
                     (map :rss/url)
                     set)))
-        (is (nil? (take-from-ws @ws-conn)))))
+        (is (nil? (take-from-ws (server->client))))))
     (testing "with duplicate :rss/url"
       (rss/synchronize-rss (ws-config)
                            [{:rss/name "First RSS"
