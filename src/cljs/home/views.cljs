@@ -10,6 +10,21 @@
   (let [formatter (f/formatter "HH:mm")]
     (f/unparse formatter (t/to-default-time-zone date))))
 
+(defn rss-feed [idx {:rss/keys [id name url]}]
+  [:div.form-row.form-group
+   [:div.col-4
+    [:input.form-control {:type "text"
+                          :value name
+                          :on-change #(rf/dispatch [::events/change-rss-name
+                                                    idx
+                                                    (-> % .-target .-value)])}]]
+   [:div.col-8
+    [:input.form-control {:type "text"
+                          :value url
+                          :on-change #(rf/dispatch [::events/change-rss-url
+                                                    idx
+                                                    (-> % .-target .-value)])}]]])
+
 (defn rss-manager []
   [:div
    [:div.modal-header
@@ -19,21 +34,8 @@
      [:span "×"]]]
    [:div.modal-body.pb-0
     [:form
-     (map-indexed (fn [idx {:rss/keys [id name url]}]
-                    ^{:key idx}
-                    [:div.form-row.form-group
-                     [:div.col-4
-                      [:input.form-control {:type "text"
-                                            :value name
-                                            :on-change #(rf/dispatch [::events/change-rss-name
-                                                                      idx
-                                                                      (-> % .-target .-value)])}]]
-                     [:div.col-8
-                      [:input.form-control {:type "text"
-                                            :value url
-                                            :on-change #(rf/dispatch [::events/change-rss-url
-                                                                      idx
-                                                                      (-> % .-target .-value)])}]]])
+     (map-indexed (fn [idx rss-attrs]
+                    ^{:key idx} [rss-feed idx rss-attrs])
                   @(rf/subscribe [::subs/rss-feeds]))]]
    [:div.modal-footer
     [:button.btn.btn-primary
