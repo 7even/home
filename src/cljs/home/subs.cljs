@@ -3,9 +3,21 @@
             home.spec
             [cljs.spec.alpha :as s]))
 
+(rf/reg-sub ::remote-rss-feeds
+            (fn [db]
+              (->> (get-in db [:rss :remote])
+                   (mapv #(select-keys % [:rss/id :rss/name :rss/url])))))
+
 (rf/reg-sub ::rss-feeds
             (fn [db]
               (get-in db [:rss :local])))
+
+(rf/reg-sub ::rss-form-dirty?
+            (fn []
+              [(rf/subscribe [::remote-rss-feeds])
+               (rf/subscribe [::rss-feeds])])
+            (fn [[remote-feeds local-feeds]]
+              (not= remote-feeds local-feeds)))
 
 (rf/reg-sub ::rss-name-invalid?
             (fn [db [_ rss-idx]]
@@ -31,9 +43,10 @@
 (rf/reg-sub ::rss-submit-disabled?
             (fn []
               [(rf/subscribe [::rss-form-invalid?])
-               (rf/subscribe [::rss-sync-in-progress?])])
-            (fn [[form-invalid? sync-in-progress?]]
-              (or form-invalid? sync-in-progress?)))
+               (rf/subscribe [::rss-sync-in-progress?])
+               (rf/subscribe [::rss-form-dirty?])])
+            (fn [[form-invalid? sync-in-progress? form-dirty?]]
+              (or form-invalid? sync-in-progress? (not form-dirty?))))
 
 (rf/reg-sub ::rss-items
             (fn [db]
