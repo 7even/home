@@ -17,39 +17,44 @@
 
 (defonce commands (atom {}))
 
-(defn- handle-event [{:event/keys [name data]
-                      command-id :command/id}]
+(defn- handle-change [{:change/keys [name data]}]
   (case name
     :rss/created (rf/dispatch [:home.events/rss-created data])
     :rss/updated (rf/dispatch [:home.events/rss-updated data])
     :rss/deleted (rf/dispatch [:home.events/rss-deleted data])
-    (println "Server sent an unknown event:" name))
+    (println "Server sent an unknown change:" name)))
+
+(defn- handle-event [{command-id :command/id
+                      changes :event/changes}]
+  (doseq [change changes]
+    (handle-change change))
   (when-let [{:keys [success]} (get @commands command-id)]
     (rf/dispatch [success])
     (swap! commands dissoc command-id)))
 
 (s/def :state/data map?)
-(s/def :events/data vector?)
+(s/def :command/id uuid?)
+(s/def :event/happened-at inst?)
+(s/def :event/changes vector?)
 
 (s/def ::state
   (s/keys :req [:state/data]))
 
-(s/def ::events
-  (s/keys :req [:events/data]))
+(s/def ::event
+  (s/keys :req [:command/id :event/happened-at :event/changes]))
 
 (s/def ::server-message
   (s/or :state ::state
-        :events ::events))
+        :event ::event))
 
 (defn handle-server-message [raw-message]
   (let [message (s/conform ::server-message raw-message)]
     (if (= message ::s/invalid)
-      (println "Server sent an unexpected message:" message)
+      (println "Server sent an unexpected message:" raw-message)
       (let [[type payload] message]
         (case type
           :state (rf/dispatch [:home.events/state-loaded (:state/data payload)])
-          :events (doseq [event (:events/data payload)]
-                    (handle-event event)))))))
+          :event (handle-event payload))))))
 
 (defn- connect []
   (ws/create (socket-url)
