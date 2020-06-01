@@ -46,13 +46,13 @@
         feeds (db.rss/list-rss (db))
         feed (first feeds)
         events-msg (take-from-ws (server->client))
-        event (-> events-msg :events first)]
+        event (-> events-msg :events/data first)]
     (is (= 1 (count feeds)))
     (is (= "Vedomosti"
            (:rss/name feed)))
     (is (= (local-file-url "vedomosti.xml")
            (:rss/url feed)))
-    (is (= 1 (-> events-msg :events count)))
+    (is (= 1 (-> events-msg :events/data count)))
     (is (= #{:event/name :event/data :event/happened-at :command/id}
            (-> event keys set)))
     (is (= :rss/created (:event/name event)))

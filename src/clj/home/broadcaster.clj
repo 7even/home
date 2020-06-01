@@ -8,7 +8,7 @@
     (while @enabled?
       (let [report (.take queue)
             events (db/format-changes report)]
-        (bus/publish! bus :events (pr-str {:events events}))))))
+        (bus/publish! bus :events (pr-str {:events/data events}))))))
 
 (defn start [db-conn]
   (let [queue (db/get-queue db-conn)

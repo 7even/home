@@ -2,7 +2,8 @@
   (:require [re-frame.core :as rf]
             [wscljs.client :as ws]
             [wscljs.format :as fmt]
-            [cljs.reader :refer [read-string]]))
+            [cljs.reader :refer [read-string]]
+            [cljs.spec.alpha :as s]))
 
 (defn- socket-url []
   (let [page-protocol (.. js/window -location -protocol)
@@ -27,14 +28,28 @@
     (rf/dispatch [success])
     (swap! commands dissoc command-id)))
 
-(defn handle-server-message [{state :state/data
-                              events :events
-                              :as message}]
-  (cond
-    (some? state) (rf/dispatch [:home.events/state-loaded state])
-    (some? events) (doseq [event events]
-                     (handle-event event))
-    :else (println "Server sent an unexpected message:" message)))
+(s/def :state/data map?)
+(s/def :events/data vector?)
+
+(s/def ::state
+  (s/keys :req [:state/data]))
+
+(s/def ::events
+  (s/keys :req [:events/data]))
+
+(s/def ::server-message
+  (s/or :state ::state
+        :events ::events))
+
+(defn handle-server-message [raw-message]
+  (let [message (s/conform ::server-message raw-message)]
+    (if (= message ::s/invalid)
+      (println "Server sent an unexpected message:" message)
+      (let [[type payload] message]
+        (case type
+          :state (rf/dispatch [:home.events/state-loaded (:state/data payload)])
+          :events (doseq [event (:events/data payload)]
+                    (handle-event event)))))))
 
 (defn- connect []
   (ws/create (socket-url)
