@@ -46,7 +46,9 @@
      [:fieldset {:disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
       (map-indexed (fn [idx rss-attrs]
                      ^{:key idx} [rss-feed idx rss-attrs])
-                   @(rf/subscribe [::subs/rss-feeds]))]]]
+                   @(rf/subscribe [::subs/rss-feeds]))]]
+    (when-let [server-error @(rf/subscribe [::subs/rss-server-error])]
+      [:div.alert.alert-danger.px-2.py-1 server-error])]
    [:div.modal-footer
     [:button.btn.btn-secondary
      {:on-click #(rf/dispatch [::events/add-rss])

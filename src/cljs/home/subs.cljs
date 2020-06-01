@@ -48,6 +48,10 @@
             (fn [[form-invalid? sync-in-progress? form-dirty?]]
               (or form-invalid? sync-in-progress? (not form-dirty?))))
 
+(rf/reg-sub ::rss-server-error
+            (fn [db]
+              (get-in db [:rss :server-error])))
+
 (rf/reg-sub ::rss-items
             (fn [db]
               (->> (get-in db [:rss :remote])

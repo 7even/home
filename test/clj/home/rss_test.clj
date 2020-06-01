@@ -47,7 +47,7 @@
                              :rss/url "https://example.com"}]
                            command-id)
       (is (= {:command/id command-id
-              :command/error "Some urls are not unique."}
+              :command/error "Some URLs are not unique."}
              (take-from-ws (server->client)))))
     (testing "with invalid params"
       (rss/synchronize-rss (ws-config)
@@ -58,21 +58,21 @@
       (let [{:command/keys [id error]} (take-from-ws (server->client))]
         (is (= command-id id))
         (is (some? (re-find #":rss/id" error)))))
-    (testing "with non-rss url"
+    (testing "with non-rss URL"
       (rss/synchronize-rss (ws-config)
                            [{:rss/name "Invalid"
                              :rss/url "https://httpbin.org/ip"}]
                            command-id)
       (is (= {:command/id command-id
-              :command/error "This is not an RSS url."}
+              :command/error "Some URL doesn't point to a valid RSS."}
              (take-from-ws (server->client)))))
-    (testing "with 404 url"
+    (testing "with 404 URL"
       (rss/synchronize-rss (ws-config)
                            [{:rss/name "Not Found"
                              :rss/url "https://httpbin.org/i-dont-exist"}]
                            command-id)
       (is (= {:command/id command-id
-              :command/error "This is not an RSS url."}
+              :command/error "Some URL doesn't point to a valid RSS."}
              (take-from-ws (server->client)))))
     (testing "with unknown host"
       (rss/synchronize-rss (ws-config)
@@ -80,7 +80,7 @@
                              :rss/url "https://foo.bar"}]
                            command-id)
       (is (= {:command/id command-id
-              :command/error "This is not an RSS url."}
+              :command/error "Some URL doesn't point to a valid RSS."}
              (take-from-ws (server->client)))))
     (testing "with an empty feeds list"
       (rss/synchronize-rss (ws-config)

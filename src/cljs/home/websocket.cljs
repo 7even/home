@@ -32,10 +32,17 @@
     (rf/dispatch [success])
     (swap! commands dissoc command-id)))
 
+(defn- handle-command-error [{command-id :command/id
+                              error-str :command/error}]
+  (when-let [{:keys [error]} (get @commands command-id)]
+    (rf/dispatch [error error-str])
+    (swap! commands dissoc command-id)))
+
 (s/def :state/data map?)
 (s/def :command/id uuid?)
 (s/def :event/happened-at inst?)
 (s/def :event/changes vector?)
+(s/def :command/error string?)
 
 (s/def ::state
   (s/keys :req [:state/data]))
@@ -43,9 +50,13 @@
 (s/def ::event
   (s/keys :req [:command/id :event/happened-at :event/changes]))
 
+(s/def ::command-error
+  (s/keys :req [:command/id :command/error]))
+
 (s/def ::server-message
   (s/or :state ::state
-        :event ::event))
+        :event ::event
+        :command-error ::command-error))
 
 (defn handle-server-message [raw-message]
   (let [message (s/conform ::server-message raw-message)]
@@ -54,7 +65,8 @@
       (let [[type payload] message]
         (case type
           :state (rf/dispatch [:home.events/state-loaded (:state/data payload)])
-          :event (handle-event payload))))))
+          :event (handle-event payload)
+          :command-error (handle-command-error payload))))))
 
 (defn- connect []
   (ws/create (socket-url)

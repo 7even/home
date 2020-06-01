@@ -35,11 +35,11 @@
                    (apply distinct?))))
     (send-to-ws ws-conn
                 {:command/id command-id
-                 :command/error "Some urls are not unique."})
+                 :command/error "Some URLs are not unique."})
     (some url-invalid? new-rss-list)
     (send-to-ws ws-conn
                 {:command/id command-id
-                 :command/error "This is not an RSS url."})
+                 :command/error "Some URL doesn't point to a valid RSS."})
     :else
     (let [old-ids (->> (db.rss/list-rss (d/db db-conn))
                        (map :rss/id)

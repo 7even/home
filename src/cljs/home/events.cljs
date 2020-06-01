@@ -28,7 +28,8 @@
                    {:db {:commands {}
                          :rss {:remote []
                                :local nil
-                               :sync-in-progress? false}}
+                               :sync-in-progress? false
+                               :server-error nil}}
                     :initialize-ws nil}))
 
 (rf/reg-event-db ::state-loaded
@@ -103,7 +104,7 @@
                  (fn [{:keys [db]}]
                    (let [command-id (random-uuid)]
                      {:db (assoc-in db [:rss :sync-in-progress?] true)
-                      :enqueue-command [command-id ::rss-synchronized :rss-failed-to-synchronize]
+                      :enqueue-command [command-id ::rss-synchronized ::rss-failed-to-synchronize]
                       :send-to-ws {:command/id command-id
                                    :command/name :rss/synchronize
                                    :command/data (get-in db [:rss :local])}})))
@@ -112,8 +113,17 @@
                  (fn [db]
                    (-> db
                        (assoc-in [:rss :sync-in-progress?] false)
+                       (assoc-in [:rss :server-error] nil)
                        copy-feeds-to-local)))
+
+(rf/reg-event-db ::rss-failed-to-synchronize
+                 (fn [db [_ error-str]]
+                   (-> db
+                       (assoc-in [:rss :sync-in-progress?] false)
+                       (assoc-in [:rss :server-error] error-str))))
 
 (rf/reg-event-db ::stop-editing-rss
                  (fn [db]
-                   (assoc-in db [:rss :local] nil)))
+                   (-> db
+                       (assoc-in [:rss :local] nil)
+                       (assoc-in [:rss :server-error] nil))))
