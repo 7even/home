@@ -21,7 +21,7 @@
 (def serializers
   {"rss" rss/serialize})
 
-(defn- serialize-event [attrs e db-before db-after]
+(defn- serialize-change [attrs e db-before db-after]
   (let [id-attr (->> attrs
                      keys
                      (filter #(= (name %) "id"))
@@ -31,18 +31,18 @@
         serializer (serializers entity-type)]
     (if (some? id-attr)
       (if entity-added?
-        {:event/name (keyword entity-type "created")
-         :event/data (serializer db-after id)}
-        {:event/name (keyword entity-type "deleted")
-         :event/data {id-attr id}})
+        {:change/name (keyword entity-type "created")
+         :change/data (serializer db-after id)}
+        {:change/name (keyword entity-type "deleted")
+         :change/data {id-attr id}})
       (let [entity-id-attr (keyword entity-type "id")
             entity-id (entity-id-attr (d/pull db-after [entity-id-attr] e))]
-        {:event/name (keyword entity-type "updated")
-         :event/data (merge {entity-id-attr entity-id}
+        {:change/name (keyword entity-type "updated")
+         :change/data (merge {entity-id-attr entity-id}
                             (second (diff (serializer db-before entity-id)
                                           (serializer db-after entity-id))))}))))
 
-(defn format-changes [{:keys [db-before db-after tx-data]}]
+(defn format-event [{:keys [db-before db-after tx-data]}]
   (let [normalized (->> tx-data
                         (group-by :e)
                         (map (fn [[e datoms]]
@@ -58,12 +58,11 @@
                           normalized)
         tx (ffirst (get grouped true))
         entities (get grouped false)]
-    (mapv (fn [[attrs e]]
-            (merge (serialize-event attrs e db-before db-after)
-                   {:event/happened-at (-> tx :db/txInstant ffirst)}
-                   (when (contains? tx :command/id)
-                     {:command/id (-> tx :command/id ffirst)})))
-          entities)))
+    {:command/id (-> tx :command/id ffirst)
+     :event/happened-at (-> tx :db/txInstant ffirst)
+     :event/changes (mapv (fn [[attrs e]]
+                            (serialize-change attrs e db-before db-after))
+                          entities)}))
 
 (comment
   (d/delete-database (get-in (home.core/config)

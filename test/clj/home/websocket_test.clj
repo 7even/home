@@ -45,20 +45,20 @@
                                        :rss/url (local-file-url "vedomosti.xml")}]})
         feeds (db.rss/list-rss (db))
         feed (first feeds)
-        events-msg (take-from-ws (server->client))
-        event (-> events-msg :events/data first)]
+        event (take-from-ws (server->client))]
     (is (= 1 (count feeds)))
     (is (= "Vedomosti"
            (:rss/name feed)))
     (is (= (local-file-url "vedomosti.xml")
            (:rss/url feed)))
-    (is (= 1 (-> events-msg :events/data count)))
-    (is (= #{:event/name :event/data :event/happened-at :command/id}
+    (is (= #{:command/id :event/happened-at :event/changes}
            (-> event keys set)))
-    (is (= :rss/created (:event/name event)))
-    (is (= "Vedomosti"
-           (get-in event [:event/data :rss/name])))
-    (is (= (local-file-url "vedomosti.xml")
-           (get-in event [:event/data :rss/url])))
-    (is (= (rss/load-news (local-file-url "vedomosti.xml"))
-           (get-in event [:event/data :rss/news])))))
+    (is (= command-id (:command/id event)))
+    (is (= 1 (-> event :event/changes count)))
+    (let [change (-> event :event/changes first)]
+      (is (= :rss/created (:change/name change)))
+      (is (= "Vedomosti" (get-in change [:change/data :rss/name])))
+      (is (= (local-file-url "vedomosti.xml")
+             (get-in change [:change/data :rss/url])))
+      (is (= (rss/load-news (local-file-url "vedomosti.xml"))
+             (get-in change [:change/data :rss/news]))))))

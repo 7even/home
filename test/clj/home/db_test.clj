@@ -25,11 +25,17 @@
       (.poll queue 50 TimeUnit/MILLISECONDS))
     (finally (db/remove-queue @db-conn))))
 
-(s/def :event/name
+(s/def :change/name
   #{:rss/created :rss/updated :rss/deleted})
 
-(s/def :event/data
+(s/def :change/data
   map?)
+
+(s/def ::change
+  (s/keys :req [:change/name :change/data]))
+
+(s/def :command/id
+  uuid?)
 
 (s/def :event/happened-at
   (and inst?
@@ -37,13 +43,14 @@
                    (t/now)
                    (c/from-date %))))
 
-(s/def :command/id
-  uuid?)
+(s/def :event/changes
+  (s/coll-of ::change
+             :kind vector?))
 
 (s/def ::event
-  (s/keys :req [:event/name :event/data :event/happened-at :command/id]))
+  (s/keys :req [:command/id :event/happened-at :event/changes]))
 
-(deftest format-changes-test
+(deftest format-event-test
   (let [ved-id (d/squuid)
         med-id (d/squuid)
         len-id (d/squuid)
@@ -56,45 +63,34 @@
                                              :rss/name "Vedomosti"
                                              :rss/url (local-file-url "vedomosti.xml")}
                                             tx-attrs]))
-            formatted-changes (db/format-changes report)]
-        (is (= 1 (count formatted-changes)))
-        (let [change (first formatted-changes)]
-          (is (s/valid? ::event change))
-          (is (= :rss/created
-                 (:event/name change)))
-          (is (= (rss/serialize (db) ved-id)
-                 (:event/data change)))
-          (is (= command-id
-                 (:command/id change))))))
+            event (db/format-event report)]
+        (is (s/valid? ::event event))
+        (is (= command-id (:command/id event)))
+        (is (= [{:change/name :rss/created
+                 :change/data (rss/serialize (db) ved-id)}]
+               (:event/changes event)))))
     (testing "with changes from an updated entity"
       (let [report (tx-report #(d/transact @db-conn
                                            [{:rss/id ved-id
                                              :rss/url (local-file-url "meduza.xml")}
                                             tx-attrs]))
-            formatted-changes (db/format-changes report)]
-        (is (= 1 (count formatted-changes)))
-        (let [change (first formatted-changes)]
-          (is (s/valid? ::event change))
-          (is (= :rss/updated
-                 (:event/name change)))
-          (is (= (select-keys (rss/serialize (db) ved-id) [:rss/id :rss/url :rss/news])
-                 (:event/data change)))
-          (is (= command-id
-                 (:command/id change))))))
+            event (db/format-event report)]
+        (is (s/valid? ::event event))
+        (is (= command-id (:command/id event)))
+        (is (= [{:change/name :rss/updated
+                 :change/data (-> (rss/serialize (db) ved-id)
+                                  (select-keys [:rss/id :rss/url :rss/news]))}]
+               (:event/changes event)))))
     (testing "with changes from a deleted entity"
       (let [report (tx-report #(d/transact @db-conn
                                            [[:db/retractEntity [:rss/id ved-id]]
                                             tx-attrs]))
-            formatted-changes (db/format-changes report)]
-        (is (= 1 (count formatted-changes)))
-        (let [change (first formatted-changes)]
-          (is (s/valid? ::event change))
-          (is (= :rss/deleted
-                 (:event/name change)))
-          (is (= {:rss/id ved-id}
-                 (:event/data change)))
-          (is (= command-id
-                 (:command/id change))))))
+            event (db/format-event report)]
+        (is (s/valid? ::event event))
+        (is (= command-id (:command/id event)))
+        (is (= [{:change/name :rss/deleted
+                 :change/data {:rss/id ved-id}}]
+               (:event/changes event)))))
     (testing "with changes covering several entities"
       (create-rss {:rss/id med-id
                    :rss/name "Meduza"})
@@ -110,28 +106,14 @@
                                               :rss/url (local-file-url "meduza.xml")}
                                              [:db/retractEntity [:rss/id len-id]]
                                              tx-attrs])))
-            formatted-changes (db/format-changes report)]
-        (is (= 3 (count formatted-changes)))
-        (let [[ved med len] formatted-changes]
-          (is (s/valid? ::event ved))
-          (is (= :rss/created
-                 (:event/name ved)))
-          (is (= (rss/serialize (db) ved-id)
-                 (:event/data ved)))
-          (is (= command-id
-                 (:command/id ved)))
-          (is (s/valid? ::event med))
-          (is (= :rss/updated
-                 (:event/name med)))
-          (is (= (select-keys (rss/serialize (db) med-id)
-                              [:rss/id :rss/url :rss/news])
-                 (:event/data med)))
-          (is (= command-id
-                 (:command/id med)))
-          (is (s/valid? ::event len))
-          (is (= :rss/deleted
-                 (:event/name len)))
-          (is (= {:rss/id len-id}
-                 (:event/data len)))
-          (is (= command-id
-                 (:command/id len))))))))
+            event (db/format-event report)]
+        (is (s/valid? ::event event))
+        (is (= command-id (:command/id event)))
+        (is (= [{:change/name :rss/created
+                 :change/data (rss/serialize (db) ved-id)}
+                {:change/name :rss/updated
+                 :change/data (-> (rss/serialize (db) med-id)
+                                  (select-keys [:rss/id :rss/url :rss/news]))}
+                {:change/name :rss/deleted
+                 :change/data {:rss/id len-id}}]
+               (:event/changes event)))))))
