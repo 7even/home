@@ -1,0 +1,7 @@
+*
+!src/
+!resources/
+!deps.edn
+!shadow-cljs.edn
+!package.json
+!yarn.lock
