@@ -4,7 +4,8 @@
             [home.broadcaster :as broadcaster]
             [home.db :as db]
             [home.http :as http]
-            [integrant.core :as ig]))
+            [integrant.core :as ig])
+  (:gen-class))
 
 (def app-env
   (or (keyword (System/getenv "APP_ENV"))
