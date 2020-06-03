@@ -71,17 +71,21 @@
      [:small (str source " @ " (format-date published-at))]]]])
 
 (defn interface []
-  [:div.container-fluid
-   [modals/modal-window]
-   [:div.row
-    [:div.col-3
-     [:ul.list-group.list-group-flush
-      [:li.list-group-item
-       [:button.btn.btn-primary
-        {:on-click (fn []
-                     (rf/dispatch-sync [::events/begin-editing-rss])
-                     (modals/modal! [rss-manager]
-                                    {:hidden #(rf/dispatch [::events/stop-editing-rss])}))}
-        "Manage RSS feeds"]]
-      (for [item @(rf/subscribe [::subs/rss-items])]
-        ^{:key (:url item)} [news-item item])]]]])
+  (if @(rf/subscribe [::subs/state-loaded?])
+    [:div.container-fluid
+     [modals/modal-window]
+     [:div.row
+      [:div.col-3
+       [:ul.list-group.list-group-flush
+        [:li.list-group-item
+         [:button.btn.btn-primary
+          {:on-click (fn []
+                       (rf/dispatch-sync [::events/begin-editing-rss])
+                       (modals/modal! [rss-manager]
+                                      {:hidden #(rf/dispatch [::events/stop-editing-rss])}))}
+          "Manage RSS feeds"]]
+        (for [item @(rf/subscribe [::subs/rss-items])]
+          ^{:key (:url item)} [news-item item])]]]]
+    [:div.vh-100.d-flex.justify-content-center.align-items-center
+     (for [_ (range 0 3)]
+       [:div.spinner-grow.m-3])]))

@@ -25,7 +25,8 @@
 
 (rf/reg-event-fx ::initialize
                  (fn []
-                   {:db {:commands {}
+                   {:db {:state-loaded? false
+                         :commands {}
                          :rss {:remote []
                                :local nil
                                :sync-in-progress? false
@@ -34,7 +35,9 @@
 
 (rf/reg-event-db ::state-loaded
                  (fn [db [_ state]]
-                   (assoc-in db [:rss :remote] (:rss state))))
+                   (-> db
+                       (assoc-in [:rss :remote] (:rss state))
+                       (assoc :state-loaded? true))))
 
 (rf/reg-event-db ::rss-created
                  (fn [db [_ {:rss/keys [id] :as rss-attrs}]]

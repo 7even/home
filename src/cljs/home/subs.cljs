@@ -3,6 +3,10 @@
             home.spec
             [cljs.spec.alpha :as s]))
 
+(rf/reg-sub ::state-loaded?
+            (fn [db]
+              (:state-loaded? db)))
+
 (rf/reg-sub ::remote-rss-feeds
             (fn [db]
               (->> (get-in db [:rss :remote])
