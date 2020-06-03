@@ -5,5 +5,5 @@
   (s/put! s (pr-str payload)))
 
 (defn take-from-ws [s]
-  (when-let [message-str @(s/try-take! s 20)]
+  (when-let [message-str @(s/try-take! s 50)]
     (read-string message-str)))
