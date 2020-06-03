@@ -42,11 +42,14 @@
                     :data-dismiss "modal"}
      [:span "×"]]]
    [:div.modal-body.pb-0
-    [:form
-     [:fieldset {:disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
-      (map-indexed (fn [idx rss-attrs]
-                     ^{:key idx} [rss-feed idx rss-attrs])
-                   @(rf/subscribe [::subs/rss-feeds]))]]
+    (let [feeds @(rf/subscribe [::subs/rss-feeds])]
+      (if (seq feeds)
+        [:form
+         [:fieldset {:disabled @(rf/subscribe [::subs/rss-sync-in-progress?])}
+          (map-indexed (fn [idx rss-attrs]
+                         ^{:key idx} [rss-feed idx rss-attrs])
+                       feeds)]]
+        [:p>em "No feeds yet"]))
     (when-let [server-error @(rf/subscribe [::subs/rss-server-error])]
       [:div.alert.alert-danger.px-2.py-1 server-error])]
    [:div.modal-footer
