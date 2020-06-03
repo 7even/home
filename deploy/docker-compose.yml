@@ -1,0 +1,23 @@
+version: '3.5'
+
+services:
+  app:
+    image: 7even/home
+    ports:
+      - 9999:9999
+    environment:
+      - DATOMIC_URI=datomic:free://transactor:4334/home?password=datomic
+      - HTTP_PORT=9999
+      - APP_ENV=production
+    depends_on:
+      - transactor
+
+  transactor:
+    image: akiel/datomic-free
+    environment:
+      - ALT_HOST=transactor
+      - ADMIN_PASSWORD=admin
+      - DATOMIC_PASSWORD=datomic
+    volumes:
+      - ./data:/data
+      - ./log:/log
