@@ -14,6 +14,7 @@
   [:div.form-row.form-group
    [:div.col-4
     [:input.form-control {:type "text"
+                          :placeholder "Vedomosti"
                           :value name
                           :class (when @(rf/subscribe [::subs/rss-name-invalid? idx])
                                    :is-invalid)
@@ -22,6 +23,7 @@
                                                     (-> % .-target .-value)])}]]
    [:div.col-7
     [:input.form-control {:type "text"
+                          :placeholder "https://vedomosti.ru/rss/news"
                           :value url
                           :class (when @(rf/subscribe [::subs/rss-url-invalid? idx])
                                    :is-invalid)
