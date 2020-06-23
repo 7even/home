@@ -10,13 +10,10 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
     npm install -g shadow-cljs
 
 COPY deps.edn .
-RUN clojure -Spath > /dev/null
+RUN clojure -Spath > /dev/null && clojure -A:cljs -Spath > /dev/null
 
 COPY package.json yarn.lock ./
 RUN yarn install
-
-COPY shadow-cljs.edn .
-RUN shadow-cljs > /dev/null
 
 COPY . .
 RUN shadow-cljs release :main && \
