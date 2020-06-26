@@ -1,4 +1,4 @@
-# Home
+# Home ![Continuous Integration](https://github.com/7even/home/workflows/Continuous%20Integration/badge.svg)
 
 This is a personal dashboard implemented as a web application. It is intended to show news, twitter user timelines, sports results, and personal reminders - all in a single web page.
 
